@@ -1,0 +1,641 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Mapa Mental Blockchain - Interactivo</title>
+
+<!-- FontAwesome -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+
+<!-- SweetAlert2 -->
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+<style>
+  :root{
+    --accent:#006BFF;
+    --card-bg: #fff;
+    --page-bg: #eef1f7;
+  }
+
+  html,body{ height:100%; margin:0; padding:0; background:var(--page-bg); font-family: "Segoe UI", Tahoma, sans-serif; color:#111; overflow-x:hidden; }
+
+  /* Centrado total */
+  .page-wrap{
+    min-height:100vh;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    padding:60px 20px;
+    box-sizing:border-box;
+  }
+
+  /* Contenedor del mapa - más pequeño */
+  .mindmap{
+    width:1200px;
+    max-width:100%;
+    height:820px;
+    background:transparent;
+    position:relative;
+    margin:0 auto;
+  }
+
+  /* Centro BLOCKCHAIN - más pequeño */
+  .center{
+    position:absolute;
+    left:50%;
+    top:50%;
+    transform:translate(-50%,-50%);
+    background:var(--accent);
+    color:white;
+    padding:16px 45px;
+    border-radius:40px;
+    font-weight:700;
+    font-size:24px;
+    box-shadow: 0 10px 25px rgba(2,27,84,0.15);
+    z-index:30;
+    transition: transform .25s ease, box-shadow .25s ease;
+    cursor:pointer;
+  }
+  .center:hover{
+    transform:translate(-50%,-50%) scale(1.05);
+    box-shadow: 0 18px 40px rgba(2,27,84,0.22);
+  }
+
+  /* Card base - ultra compactas */
+  .card {
+    position:absolute;
+    width:230px;
+    background:var(--card-bg);
+    border-radius:10px;
+    padding:14px 16px;
+    box-shadow: 0 8px 20px rgba(8,30,60,0.08);
+    opacity:0;
+    transform: translateY(16px);
+    animation: cardIn .6s forwards;
+    transition: transform .18s ease, box-shadow .18s ease;
+    cursor:default;
+  }
+  .card:hover{ 
+    transform: translateY(-4px); 
+    box-shadow: 0 18px 40px rgba(8,30,60,0.12); 
+  }
+
+  @keyframes cardIn {
+    to { opacity:1; transform: translateY(0); }
+  }
+
+  .card h3{ 
+    margin:0 0 8px 0; 
+    color:var(--accent); 
+    font-size:15px; 
+    display:flex; 
+    align-items:center; 
+    gap:6px; 
+    border-bottom:2px solid #f0f4f8;
+    padding-bottom:6px;
+  }
+  .card ul{ margin:0; padding-left:16px; color:#333; line-height:1.4; font-size:13px; }
+  .card ul li{ 
+    margin-bottom:5px; 
+    cursor:pointer; 
+    transition: all .15s ease;
+    padding:1px 0;
+  }
+  .card ul li:hover{ 
+    color:var(--accent); 
+    transform:translateX(6px); 
+    font-weight:500;
+  }
+
+  /* POSICIONES REORGANIZADAS - Más compactas */
+  
+  /* Arriba centro-izquierda */
+  .pos-def { 
+    top:3%; 
+    left:42%; 
+    transform: translateX(-50%); 
+    animation-delay: .15s; 
+  }
+  
+  /* Superior izquierda */
+  .pos-estruct { 
+    top:10%; 
+    left:6%; 
+    animation-delay: .25s; 
+  }
+  
+  /* Superior derecha */
+  .pos-arqu { 
+    top:17%; 
+    right:6%; 
+    animation-delay: .35s; 
+  }
+  
+  /* Centro izquierda */
+  .pos-tec { 
+    top:44%; 
+    left:2%; 
+    transform: translateY(-50%);
+    animation-delay: .45s; 
+  }
+  
+  /* Centro derecha */
+  .pos-cons { 
+    top:44%; 
+    right:2%; 
+    transform: translateY(-50%);
+    animation-delay: .55s; 
+  }
+
+  /* Inferior izquierda */
+  .pos-iot { 
+    bottom:4%; 
+    left:14%; 
+    animation-delay: .65s; 
+  }
+  
+  /* Inferior derecha */
+  .pos-apps { 
+    bottom:4%; 
+    right:14%; 
+    animation-delay: .75s; 
+  }
+
+  /* Líneas conectoras sutiles */
+  .mindmap::before {
+    content: '';
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    background: 
+      radial-gradient(circle at 50% 50%, rgba(0,107,255,0.03) 0%, transparent 50%);
+    pointer-events: none;
+    z-index: 1;
+  }
+
+  /* Responsivo: en pantallas pequeñas apilar verticalmente */
+  @media (max-width: 1200px){
+    .mindmap{ 
+      height:auto; 
+      width:100%; 
+      display:flex;
+      flex-direction:column;
+      align-items:center;
+      gap:24px;
+      padding:30px 0;
+    }
+    .card { 
+      position:relative !important; 
+      width:90%;
+      max-width:420px;
+      transform:none !important; 
+      opacity:1; 
+      top:auto !important;
+      left:auto !important;
+      right:auto !important;
+      bottom:auto !important;
+    }
+    .center{ 
+      position:relative !important; 
+      left:auto !important; 
+      top:auto !important; 
+      transform:none !important; 
+      margin:20px auto; 
+      display:inline-block;
+    }
+    .mindmap::before {
+      display:none;
+    }
+  }
+
+  /* Scroll suave */
+  html {
+    scroll-behavior: smooth;
+  }
+
+  /* Título superior */
+  .page-title {
+    position:fixed;
+    top:15px;
+    left:50%;
+    transform:translateX(-50%);
+    background:rgba(255,255,255,0.95);
+    padding:10px 28px;
+    border-radius:25px;
+    box-shadow:0 6px 20px rgba(0,0,0,0.06);
+    font-weight:600;
+    font-size:14px;
+    color:#1a2332;
+    z-index:50;
+    backdrop-filter:blur(10px);
+  }
+
+  @media (max-width: 1200px){
+    .page-title {
+      position:relative;
+      top:auto;
+      left:auto;
+      transform:none;
+      margin:20px auto;
+      display:inline-block;
+    }
+    .page-wrap{
+      padding:20px;
+    }
+  }
+
+  /* Footer */
+  .custom {
+    background: #1a2332;
+    color: #fff;
+    padding: 20px 0;
+    text-align: center;
+    font-size: 14px;
+    border-top: 3px solid var(--accent);
+  }
+
+  .custom .container {
+    max-width: 800px;
+    margin: 0 auto;
+    padding: 0 20px;
+  }
+
+  .custom p {
+    margin: 0 0 8px 0;
+    line-height: 1.5;
+  }
+
+  .custom p.h6 {
+    font-size: 16px;
+    font-weight: 600;
+    margin-bottom: 12px;
+    color: #fff;
+  }
+
+  .custom p.font-italic {
+    font-style: italic;
+  }
+
+  .custom strong {
+    color: var(--accent);
+  }
+
+  .custom i {
+    margin-right: 8px;
+    color: var(--accent);
+  }
+
+  @media (max-width: 768px) {
+    .custom {
+      padding: 15px 0;
+      font-size: 13px;
+    }
+    
+    .custom .container {
+      padding: 0 15px;
+    }
+    
+    .custom p.h6 {
+      font-size: 15px;
+    }
+  }
+</style>
+</head>
+<body>
+
+<div class="page-title">
+  <i class="fa-solid fa-diagram-project"></i> Mapa Mental Interactivo del Blockchain
+</div>
+
+<div class="page-wrap">
+
+  <div class="mindmap" id="mindmap">
+
+    <div class="center" id="centerBtn" title="Click para ver info general">
+      <i class="fa-solid fa-cube"></i> BLOCKCHAIN
+    </div>
+
+    <!-- Definición -->
+    <div class="card pos-def">
+      <h3><i class="fa-solid fa-book-open"></i> Definición</h3>
+      <ul>
+        <li data-key="Libro distribuido">Libro distribuido</li>
+        <li data-key="Descentralización">Descentralización</li>
+        <li data-key="Inmutabilidad">Inmutabilidad</li>
+        <li data-key="Transparencia">Transparencia</li>
+      </ul>
+    </div>
+
+    <!-- Estructura -->
+    <div class="card pos-estruct">
+      <h3><i class="fa-solid fa-layer-group"></i> Estructura</h3>
+      <ul>
+        <li data-key="Bloques">Bloques</li>
+        <li data-key="Hashes">Hashes</li>
+        <li data-key="Encadenamiento">Encadenamiento</li>
+        <li data-key="Merkle Tree">Merkle Tree</li>
+      </ul>
+    </div>
+
+    <!-- Arquitectura -->
+    <div class="card pos-arqu">
+      <h3><i class="fa-solid fa-diagram-project"></i> Arquitectura</h3>
+      <ul>
+        <li data-key="Capa de red">Capa de red</li>
+        <li data-key="Capa de consenso">Capa de consenso</li>
+        <li data-key="Smart contracts">Smart contracts</li>
+        <li data-key="Aplicación">Aplicación</li>
+      </ul>
+    </div>
+
+    <!-- Componentes Técnicos -->
+    <div class="card pos-tec">
+      <h3><i class="fa-solid fa-gears"></i> Componentes Técnicos</h3>
+      <ul>
+        <li data-key="Nodos">Nodos</li>
+        <li data-key="Red P2P">Red P2P</li>
+        <li data-key="Smart Contracts (code)">Smart Contracts</li>
+        <li data-key="Ledger distribuido">Ledger distribuido</li>
+      </ul>
+    </div>
+
+    <!-- Consenso -->
+    <div class="card pos-cons">
+      <h3><i class="fa-solid fa-check-double"></i> Consenso</h3>
+      <ul>
+        <li data-key="Proof of Work">Proof of Work</li>
+        <li data-key="Proof of Stake">Proof of Stake</li>
+        <li data-key="PBFT">PBFT</li>
+        <li data-key="RAFT">RAFT</li>
+      </ul>
+    </div>
+
+    <!-- Blockchain + IoT -->
+    <div class="card pos-iot" id="card-iot">
+      <h3><i class="fa-solid fa-microchip"></i> Blockchain + IoT</h3>
+      <ul>
+        <li data-key="Seguridad IoT">Seguridad IoT</li>
+        <li data-key="Identidad digital">Identidad digital</li>
+        <li data-key="Trazabilidad IoT">Trazabilidad</li>
+        <li data-key="Integridad IoT">Integridad</li>
+      </ul>
+    </div>
+
+    <!-- Aplicaciones -->
+    <div class="card pos-apps" id="card-apps">
+      <h3><i class="fa-solid fa-lightbulb"></i> Aplicaciones</h3>
+      <ul>
+        <li data-key="Criptomonedas">Criptomonedas</li>
+        <li data-key="Supply Chain">Supply Chain</li>
+        <li data-key="Gobierno digital">Gobierno digital</li>
+        <li data-key="Salud">Salud</li>
+      </ul>
+    </div>
+
+  </div>
+</div>
+
+<footer class="custom">
+  <div class="container">
+    <p class="h6 mb-2"><i class="fas fa-microchip"></i> Electiva profesional </p>
+    <p class="mb-1">Blockchain profesional  | Profesor: Rogelio Vasquez</p>
+    <p class="mb-1">&copy; 2025 - Ingeniería de Software | Corporación Universitaria Iberoamericana</p>
+    <p class="font-italic mb-0">Desarrollado por: <strong>Yesid Bernal - Código Banner: 100161797</strong></p>
+  </div>
+</footer>
+
+<script>
+const descriptions = {
+  /* =========================
+     DEFINICIÓN
+     ========================= */
+  "Libro distribuido": {
+    icon: "fa-solid fa-book-atlas",
+    text: "Un libro mayor distribuido (DLT) es una base de datos consensuada y compartida que existe en múltiples ubicaciones. A diferencia de las bases de datos tradicionales, no tiene un administrador central ni un almacenamiento centralizado. Cada participante en la red tiene acceso a todo el libro mayor y puede verificar los registros de forma independiente. Esta arquitectura elimina la necesidad de intermediarios y crea un sistema más resiliente y transparente para registrar transacciones y activos digitales.",
+    image: "https://academy.bit2me.com/wp-content/uploads/2019/07/72_Ledger.webp"
+  },
+  "Descentralización": {
+    icon: "fa-solid fa-diagram-project",
+    text: "La descentralización en blockchain se refiere a la transferencia de control y toma de decisiones de una entidad centralizada (individuo, organización o grupo) a una red distribuida. Esta característica fundamental elimina puntos únicos de falla y reduce la capacidad de cualquier entidad individual de ejercer control sobre toda la red. Los beneficios incluyen mayor seguridad, resistencia a la censura, y eliminación de intermediarios, creando sistemas más democráticos y resilientes donde el poder se distribuye entre todos los participantes.",
+    image: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSbNr06D8THSKsACgBGmzbOK1wZZPtbdTBTBw&s"
+  },
+  "Inmutabilidad": {
+    icon: "fa-solid fa-shield-halved",
+    text: "La inmutabilidad en blockchain significa que una vez que los datos se han escrito en el libro mayor, no pueden ser alterados o eliminados. Esto se logra mediante funciones criptográficas hash que crean huellas digitales únicas para cada bloque. Cualquier intento de modificar datos existentes cambiaría el hash del bloque, lo que invalidaría todos los bloques subsiguientes y sería inmediatamente detectado por la red. Esta propiedad garantiza la integridad de los datos históricos y proporciona un registro permanente y a prueba de manipulaciones para auditoría y verificación.",
+    image: "https://assets.bitstamp.net/msc/_ipx/enlarge_true&f_png&fit_cover&q_85&s_1200x630/bitstampImageUrl/1920x1080px_illustrations_learningcenter_100svg_f4565986d1_20e4fe64f1_b37a774837.png"
+  },
+  "Transparencia": {
+    icon: "fa-solid fa-eye",
+    text: "La transparencia en blockchain permite que todas las transacciones sean visibles para cualquier participante de la red, creando un sistema de contabilidad abierto y verificable. Mientras que las identidades de los participantes pueden permanecer seudónimas (representadas por direcciones de wallet), todas las transacciones son completamente transparentes y rastreables. Esta característica fomenta la confianza entre participantes que de otra manera no se conocerían, ya que cualquiera puede auditar el historial completo de transacciones sin depender de terceros de confianza.",
+    image: "https://www.viaempresa.cat/uploads/s1/20/70/27/75/istock-680847092.jpeg"
+  },
+
+  /* ========================= 
+     ESTRUCTURA   image: ""
+     ========================= */
+  "Bloques": {
+    icon: "fa-solid fa-cube",
+    text: "Los bloques son las unidades fundamentales de una blockchain. Cada bloque contiene un conjunto de transacciones validadas, una marca de tiempo, y referencias criptográficas al bloque anterior (hash del bloque padre). Los bloques se crean a intervalos regulares (por ejemplo, cada 10 minutos en Bitcoin) y se agregan secuencialmente a la cadena. La estructura de un bloque típicamente incluye un encabezado con metadatos (versión, hash anterior, marca de tiempo, etc.) y un cuerpo que contiene la lista de transacciones validadas durante ese período.",
+    image: "https://images.unsplash.com/photo-1639762681057-408e52192e55?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80"
+  },
+  "Hashes": {
+    icon: "fa-solid fa-key",
+    text: "Los hashes criptográficos son funciones matemáticas que toman datos de entrada de cualquier tamaño y producen una cadena de caracteres de longitud fija (el hash). En blockchain, los hashes se utilizan para identificar bloques y transacciones de forma única. Cualquier cambio mínimo en los datos de entrada produce un hash completamente diferente, lo que hace que sea computacionalmente imposible revertir el proceso o encontrar colisiones. Los hashes garantizan la integridad de los datos y crean los enlaces criptográficos entre bloques que hacen que la cadena sea inmutable y segura.",
+    image: "https://thumbs.dreamstime.com/b/fingerprint-blockchain-hashes-bitcoin-ethereum-symbols-dark-tech-background-high-resolution-digital-illustration-395119737.jpg"
+  },
+  "Encadenamiento": {
+    icon: "fa-solid fa-link",
+    text: "El encadenamiento es el proceso mediante el cual cada bloque contiene el hash criptográfico del bloque anterior, creando una cadena cronológica e inmutable de bloques. Esta estructura garantiza que cualquier modificación en un bloque anterior invalidaría todos los bloques subsiguientes, ya que cambiaría su hash y rompería la cadena. El encadenamiento proporciona la base para la seguridad de blockchain, ya que requeriría una cantidad computacionalmente prohibitiva de poder para rehacer todos los bloques subsiguientes después de modificar uno anterior, protegiendo así el historial de transacciones contra manipulaciones.",
+    image: "https://thumbs.dreamstime.com/z/s%C3%ADmbolo-del-enlace-hipertexto-de-blockchain-en-la-informaci%C3%B3n-grande-flujo-datos-n%C3%BAmero-c%C3%B3digo-binario-concepto-negocio-las-107443996.jpg?ct=jpeg"
+  },
+  "Merkle Tree": {
+    icon: "fa-solid fa-code-branch",
+    text: "Un árbol de Merkle es una estructura de datos criptográfica que permite la verificación eficiente y segura de grandes conjuntos de datos. En blockchain, todas las transacciones en un bloque se organizan en un árbol de Merkle, donde las transacciones individuales son las hojas, y los nodos padres contienen los hashes de sus hijos. La raíz del árbol (Merkle Root) se incluye en el encabezado del bloque. Esta estructura permite verificar si una transacción específica está incluida en un bloque sin necesidad de descargar todas las transacciones, mejorando significativamente la eficiencia de los clientes ligeros (light clients).",
+    image: "https://media.geeksforgeeks.org/wp-content/uploads/20220105132934/Screenshot20220105132913.png"
+  },
+
+  /* =========================
+     ARQUITECTURA
+     ========================= */
+  "Capa de red": {
+    icon: "fa-solid fa-network-wired",
+    text: "La capa de red en blockchain es responsable de la comunicación entre nodos en la red peer-to-peer (P2P). Esta capa gestiona el descubrimiento de nodos, la propagación de transacciones y bloques, y el mantenimiento de la conectividad de la red. Utiliza protocolos de gossip donde los nodos comparten información con sus pares, asegurando que los datos se difundan rápidamente por toda la red. La capa de red es fundamental para mantener la descentralización, ya que permite que cualquier persona pueda unirse a la red y participar en la validación y propagación de transacciones sin permisos especiales.",
+    image: "https://observatorioblockchain.com/wp-content/uploads/2023/11/Capas-blockchain-diferencias-entre-las-redes-Capa-0-Capa-1-Capa-2-y-Capa-3.jpg"
+  },
+  "Capa de consenso": {
+    icon: "fa-solid fa-handshake",
+    text: "La capa de consenso es el mecanismo mediante el cual todos los nodos de la red blockchain llegan a un acuerdo sobre el estado actual del libro mayor. Esta capa implementa algoritmos como Proof of Work, Proof of Stake, o otros, que determinan qué nodo tiene el derecho de agregar el siguiente bloque a la cadena. El consenso garantiza que todas las copias distribuidas del libro mayor sean idénticas, previene el doble gasto, y asegura que la red permanezca segura y descentralizada. Sin un mecanismo de consenso robusto, sería imposible mantener la coherencia entre los miles de nodos independientes que componen la red.",
+    image: "https://academy.bit2me.com/wp-content/uploads/2024/04/Articulo_Capas-blockchain_Bit2Me-Academy.webp"
+  },
+  "Smart contracts": {
+    icon: "fa-solid fa-file-contract",
+    text: "Los smart contracts (contratos inteligentes) son programas autoejecutables almacenados en la blockchain que ejecutan automáticamente los términos de un acuerdo cuando se cumplen condiciones predefinidas. Estos contratos eliminan la necesidad de intermediarios y reducen los costos de transacción al automatizar procesos que tradicionalmente requerían supervisión humana. Escritos en lenguajes de programación específicos como Solidity, los smart contracts permiten crear aplicaciones descentralizadas (DApps) que pueden gestionar desde simples transferencias de tokens hasta sistemas financieros complejos (DeFi), mercados predictivos y sistemas de gobernanza automatizados.",
+    image: "https://www.researchgate.net/publication/365399680/figure/fig1/AS:11431281431541997@1746800170215/Blockchain-based-smart-contract.tif"
+  },
+  "Aplicación": {
+    icon: "fa-solid fa-window-restore",
+    text: "La capa de aplicación es donde los usuarios finales interactúan con la blockchain a través de interfaces como wallets, exploradores de bloques, y aplicaciones descentralizadas (DApps). Esta capa abstrae la complejidad técnica subyacente, permitiendo que usuarios no técnicos puedan enviar transacciones, interactuar con smart contracts, y gestionar activos digitales. Las aplicaciones pueden variar desde simples interfaces web hasta aplicaciones móviles complejas que aprovechan las capacidades únicas de blockchain como la descentralización, la inmutabilidad y la capacidad de ejecutar lógica empresarial a través de contratos inteligentes.",
+    image: "https://metlabs.io/wp-content/uploads/2023/11/como-funciona-lighting-network-blockchain-1024x576.png"
+  },
+
+  /* =========================
+     COMPONENTES TÉCNICOS
+     ========================= */
+  "Nodos": {
+    icon: "fa-solid fa-server",
+    text: "Los nodos son los participantes individuales en una red blockchain que mantienen una copia completa o parcial del libro mayor y participan en el proceso de consenso. Existen diferentes tipos de nodos: nodos completos (que almacenan toda la blockchain y validan todas las transacciones), nodos mineros (que participan en la creación de nuevos bloques), y nodos ligeros (que dependen de nodos completos para acceder a la información de la blockchain). Los nodos trabajan colectivamente para mantener la seguridad, descentralización y funcionalidad de la red, verificando transacciones y asegurando que todos sigan las reglas del protocolo.",
+    image: "https://i.blogs.es/b5ce90/blockchain2/1366_2000.jpg"
+  },
+  "Red P2P": {
+    icon: "fa-solid fa-share-nodes",
+    text: "La red peer-to-peer (P2P) es una arquitectura de red descentralizada donde los participantes (pares) interactúan directamente entre sí sin necesidad de servidores centrales. En blockchain, las redes P2P permiten que los nodos se comuniquen, compartan transacciones y bloques, y mantengan colectivamente el consenso sobre el estado del libro mayor. Esta arquitectura elimina puntos únicos de falla y hace que la red sea más resistente a la censura y ataques. Las redes P2P de blockchain utilizan protocolos de descubrimiento para que los nuevos nodos puedan encontrar y conectarse a pares existentes, creando una malla robusta y autorreparable.",
+    image: "https://criptomo.com/images/posts/201712/bitcoin_p2p.png"
+  },
+  "Smart Contracts (code)": {
+    icon: "fa-solid fa-code",
+    text: "El código de los smart contracts representa la lógica empresarial programable que se ejecuta en la blockchain. Escritos en lenguajes específicos como Solidity (Ethereum) o Rust (Solana), estos contratos definen las reglas, condiciones y acciones que se ejecutarán automáticamente cuando se cumplan ciertas condiciones. El código del contrato se compila en bytecode que se despliega en la blockchain, donde se ejecuta de forma determinista por todos los nodos de la red. Una vez desplegado, el código del contrato inteligente es inmutable (a menos que se diseñe específicamente para ser actualizable) y transparente, permitiendo que cualquiera pueda auditar su funcionalidad.",
+    image: "https://rejolut.com/wp-content/uploads/2023/01/Smart_Contracts.jpg"
+  },
+  "Ledger distribuido": {
+    icon: "fa-solid fa-book",
+    text: "El ledger distribuido (libro mayor distribuido) es la base de datos replicada y sincronizada que existe en todos los nodos de la red blockchain. A diferencia de las bases de datos centralizadas tradicionales, no hay una copia maestra oficial; todas las copias son iguales y se mantienen consistentes mediante protocolos de consenso. Cada participante de la red puede verificar independientemente el estado del ledger, eliminando la necesidad de confiar en un tercero. El ledger distribuido registra de forma permanente todas las transacciones históricas, proporcionando un registro completo, transparente y a prueba de manipulaciones del historial de la red.",
+    image: "https://academy.bit2me.com/wp-content/uploads/2019/07/72_Ledger.webp"
+  },
+
+  /* =========================
+     CONSENSO
+     ========================= */
+  "Proof of Work": {
+    icon: "fa-solid fa-bolt",
+    text: "Proof of Work (PoW) es el algoritmo de consenso original utilizado por Bitcoin. En PoW, los mineros compiten para resolver complejos problemas matemáticos que requieren un poder computacional significativo. El primer minero en encontrar la solución válida tiene el derecho de agregar el siguiente bloque a la cadena y recibe una recompensa. Este proceso, conocido como 'minería', consume grandes cantidades de energía pero proporciona una seguridad extraordinaria, ya que atacar la red requeriría controlar más del 51% del poder computacional total de la red, lo que resulta económicamente prohibitivo para blockchains establecidas como Bitcoin.",
+    image: "https://www.asynclabs.co/wp-content/uploads/2018/07/proof-of-work-right-result-2.png"
+  },
+  "Proof of Stake": {
+    icon: "fa-solid fa-gem",
+    text: "Proof of Stake (PoS) es un algoritmo de consenso más eficiente energéticamente que Proof of Work. En PoS, los validadores son seleccionados para crear nuevos bloques en función de la cantidad de criptomonedas que 'apuestan' (stake) como garantía. En lugar de competir mediante poder computacional, los validadores son elegidos aleatoriamente, con mayores probabilidades para aquellos con mayores participaciones. Los validadores maliciosos pueden perder sus participaciones (slashing), lo que desincentiva el comportamiento deshonesto. PoS reduce drásticamente el consumo energético mientras mantiene la seguridad de la red a través de incentivos económicos alineados.",
+    image: "https://bitcoinwiki.org/wp-content/uploads/2023/12/500px-ProofE28093ofE28093Stake_28PoS29-3.jpg"
+  },
+  "PBFT": {
+    icon: "fa-solid fa-shield",
+    text: "Practical Byzantine Fault Tolerance (PBFT) es un algoritmo de consenso diseñado para sistemas distribuidos que deben tolerar fallos bizantinos (donde los componentes pueden fallar de manera arbitraria). PBFT funciona bien en entornos de permisos (blockchains privadas o consorcios) donde los participantes son conocidos y confiables. El algoritmo permite que un sistema continúe funcionando correctamente incluso si hasta un tercio de los nodos son maliciosos o fallan. PBFT es mucho más eficiente en términos de energía y rendimiento que Proof of Work, pero sacrifica algo de descentralización al requerir que los participantes sean conocidos y autorizados.",
+    image: "https://i.ytimg.com/vi/IafgKJN3nwU/maxresdefault.jpg"
+  },
+  "RAFT": {
+    icon: "fa-solid fa-people-group",
+    text: "RAFT es un algoritmo de consenso distribuido diseñado para ser comprensible y fácil de implementar. A diferencia de los algoritmos de blockchain que priorizan la descentralización completa, RAFT se utiliza típicamente en sistemas distribuidos más tradicionales donde los participantes son conocidos y confiables. El algoritmo elige un 'líder' que coordina la replicación de logs a través de los seguidores. RAFT garantiza coherencia y tolerancia a fallos en entornos donde la confianza entre nodos está parcialmente establecida. Aunque menos descentralizado que los algoritmos de blockchain puros, RAFT proporciona un consenso robusto y eficiente para aplicaciones empresariales y sistemas distribuidos convencionales.",
+    image: "https://media.springernature.com/lw685/springer-static/image/art%3A10.1007%2Fs13369-021-05427-8/MediaObjects/13369_2021_5427_Fig4_HTML.png"
+  },
+
+  /* =========================
+     BLOCKCHAIN + IoT
+     ========================= */
+  "Seguridad IoT": {
+    icon: "fa-solid fa-lock",
+    text: "La integración de blockchain con IoT aborda los desafíos críticos de seguridad en dispositivos conectados. Blockchain proporciona un registro inmutable de todas las interacciones y transacciones entre dispositivos IoT, previniendo manipulaciones y garantizando la autenticidad de los datos. Los smart contracts pueden automatizar respuestas de seguridad, como aislar dispositivos comprometidos o revocar credenciales. La descentralización elimina puntos únicos de falla, haciendo que los sistemas IoT sean más resistentes a ataques. Además, blockchain permite la verificación criptográfica de actualizaciones de firmware, asegurando que solo se ejecute código autorizado en los dispositivos IoT.",
+    image: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRq_Rbt2rgO6ZWk5Zfx8vFe3lc5igMmITfdnQ&s"
+  },
+  "Identidad digital": {
+    icon: "fa-solid fa-id-card",
+    text: "Blockchain permite la creación de identidades digitales soberanas para dispositivos IoT, donde cada dispositivo tiene una identidad criptográfica única e inmutable registrada en la cadena. Estas identidades permiten la autenticación segura entre dispositivos sin depender de autoridades centrales. Los dispositivos pueden demostrar su autenticidad y procedencia, previniendo la suplantación y asegurando que solo dispositivos autorizados puedan unirse a la red. Las identidades blockchain para IoT también facilitan la gestión del ciclo de vida del dispositivo, desde la fabricación hasta el retiro, proporcionando un historial completo y verificable de cada dispositivo.",
+    image: "https://www.criptonoticias.com/wp-content/uploads/2018/02/identidad-digital-microsoft.jpg"
+  },
+  "Trazabilidad IoT": {
+    icon: "fa-solid fa-route",
+    text: "La trazabilidad con blockchain en IoT crea un registro inmutable y transparente del ciclo de vida completo de productos y activos. Los sensores IoT registran datos en tiempo real (temperatura, ubicación, condiciones ambientales) que se anclan en la blockchain, creando una cadena de custodia verificable. Esta capacidad es especialmente valiosa en supply chains, donde los stakeholders pueden verificar el origen, condiciones de transporte, y autenticidad de productos. La combinación de IoT y blockchain elimina la necesidad de confiar en registros centralizados y proporciona evidencia irrefutable de eventos específicos, desde la fabricación hasta la entrega al consumidor final.",
+    image: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTn9SVHrRUzih4jnJ2v5H-5Yl0gv4xLiv9cKg&s"
+  },
+  "Integridad IoT": {
+    icon: "fa-solid fa-circle-check",
+    text: "La integridad de datos en IoT mediante blockchain garantiza que la información generada por sensores y dispositivos no haya sido alterada o manipulada. Cada lectura de sensor puede ser hasheada y registrada en la blockchain, creando una prueba criptográfica de su autenticidad. Los smart contracts pueden verificar automáticamente la consistencia de los datos y ejecutar acciones basadas en lecturas verificadas. Esta capacidad es crucial para aplicaciones donde la precisión de los datos es crítica, como en monitoreo médico, control industrial, o reporting ambiental. La integridad blockchain-enabled transforma los datos IoT de meras observaciones en evidencia confiable y legalmente vinculante.",
+    image: "https://intosaijournal.org/wp-content/uploads/2025/04/28_Q1-2025_GRAPHIC_SpotlightTech_Brazil-ES.pptx-1024x576.jpg"
+  },
+
+  /* =========================
+     APLICACIONES
+     ========================= */
+  "Criptomonedas": {
+    icon: "fa-solid fa-coins",
+    text: "Las criptomonedas son la aplicación más conocida de blockchain, funcionando como medios de intercambio digitales descentralizados que utilizan criptografía para asegurar transacciones. Bitcoin, creado en 2009, introdujo el concepto de dinero digital peer-to-peer sin necesidad de intermediarios financieros. Las criptomonedas permiten transferencias globales rápidas y de bajo costo, inclusión financiera para personas no bancarizadas, y protección contra la censura y confiscación. Más allá del simple intercambio de valor, las criptomonedas han evolucionado para incluir tokens utilitarios que acceden a servicios, tokens de seguridad que representan activos financieros, y stablecoins vinculadas a monedas fiduciarias.",
+    image: "https://images.unsplash.com/photo-1621761191319-c6fb62004040?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80"
+  },
+  "Supply Chain": {
+    icon: "fa-solid fa-box-open",
+    text: "Blockchain está revolucionando la gestión de cadenas de suministro al proporcionar transparencia, trazabilidad y autenticidad desde el origen hasta el consumidor. Cada paso en la cadena de suministro puede registrarse de forma inmutable, permitiendo a los participantes verificar la procedencia de materiales, condiciones de transporte, y autenticidad de productos. Esta transparencia ayuda a combatir la falsificación, asegurar el cumplimiento de regulaciones, y verificar afirmaciones como 'comercio justo' u 'orgánico'. Las empresas pueden optimizar sus operaciones identificando cuellos de botella, mientras que los consumidores obtienen visibilidad sin precedentes sobre el origen y recorrido de los productos que compran.",
+    image: "data:image/jpeg;base64,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"
+  },
+  "Gobierno digital": {
+    icon: "fa-solid fa-landmark-dome",
+    text: "Blockchain está transformando la gobernanza mediante la creación de sistemas más transparentes, eficientes y resistentes a la corrupción. Las aplicaciones incluyen registros de propiedad inmutable, sistemas de votación verificables, identidades digitales soberanas, y transparencia en el gasto público. Los smart contracts pueden automatizar procesos burocráticos, reducir la discrecionalidad, y eliminar intermediarios. Los gobiernos están explorando blockchain para servicios como registro civil, impuestos, licitaciones públicas, y emisión de documentos oficiales. Estas aplicaciones tienen el potencial de restaurar la confianza ciudadana, reducir la burocracia, y crear instituciones más responsables y eficientes.",
+    image: "https://www.deloitte.com/content/dam/assets-zone2/es/es/img/promos/industries/government-public-services/2023/Deloitte-ES-SectorPublico-aplicaciones-practicas-de-blockchain-para-el-sector-publico-1x1.jpg"
+  },
+  "Salud": {
+    icon: "fa-solid fa-heart-pulse",
+    text: "En el sector salud, blockchain está abordando desafíos críticos como la interoperabilidad de historiales médicos, la integridad de datos clínicos, y la trazabilidad de medicamentos. Los registros de salud basados en blockchain permiten a los pacientes controlar su información médica mientras garantizan a los proveedores acceso a datos verificados y completos. La tecnología puede prevenir la falsificación de medicamentos mediante trazabilidad desde el fabricante hasta la farmacia. Los ensayos clínicos pueden utilizar blockchain para garantizar la integridad de los datos y el consentimiento informado. Estas aplicaciones mejoran la calidad de la atención, reducen costos administrativos, y empoderan a los pacientes con el control de sus datos de salud.",
+    image: "https://observatorioblockchain.com/wp-content/uploads/2023/08/blockchain-registros-salud-imagen.jpg"
+  }
+};
+
+function escapeHtml(s){
+  if(!s) return '';
+  return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+
+function showItemModal(key){
+  const meta = descriptions[key] || { 
+    icon: "fa-solid fa-info-circle", 
+    text: "Descripción no disponible.",
+    image: "https://images.unsplash.com/photo-1551288049-bebda4e38f71?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80"
+  };
+  
+  const iconHtml = `<i class="${meta.icon}" style="font-size:22px; color:var(--accent); margin-right:8px;"></i>`;
+  const imageUrl = meta.image || `https://via.placeholder.com/600x360?text=${encodeURIComponent(key)}`;
+
+  const html = `
+    <div style="text-align:left">
+      <div style="display:flex; gap:12px; align-items:center; margin-bottom:16px;">
+        ${iconHtml}
+        <div style="font-weight:700; font-size:20px; color:#1a2332;">${escapeHtml(key)}</div>
+      </div>
+      <div style="display:flex; gap:16px; align-items:flex-start; flex-wrap:wrap;">
+        <img src="${imageUrl}" alt="${escapeHtml(key)}" style="max-width:320px; width:100%; height:auto; border-radius:10px; border:1px solid #e9eef8; box-shadow: 0 6px 20px rgba(13,43,120,0.08)" />
+        <div style="flex:1; min-width:250px;">
+          <p style="margin-top:0; color:#24324a; line-height:1.6;">${escapeHtml(meta.text)}</p>
+        </div>
+      </div>
+    </div>
+  `;
+
+  Swal.fire({
+    html,
+    showCancelButton: false,
+    focusConfirm: false,
+    confirmButtonText: 'Cerrar',
+    width: 800
+  });
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+  const centerBtn = document.getElementById('centerBtn');
+  centerBtn.addEventListener('click', () => {
+    Swal.fire({
+      title: '<i class="fa-solid fa-cubes-stacked" style="color:var(--accent); margin-right:8px"></i>Blockchain ',
+      html: `<p style="text-align:left; color:#2b3b53; line-height:1.7">Blockchain es una tecnología revolucionaria de registro distribuido que permite mantener un libro mayor descentralizado, inmutable y transparente. Funciona como una base de datos compartida que registra transacciones entre múltiples partes de manera verificable y permanente. Su arquitectura elimina la necesidad de intermediarios, reduce costos de verificación y contratación, y crea sistemas más resistentes a la censura y manipulación. Desde criptomonedas hasta supply chain, identidad digital y contratos inteligentes, blockchain está transformando industrias enteras al proporcionar una nueva base de confianza en entornos digitales.</p>
+             <img src="https://strategicplatform.com/hs-fs/hubfs/iStock-935228958.jpg?width=2335&name=iStock-935228958.jpg" style="width:400px; max-width:100%; border-radius:10px; margin-top:16px; box-shadow:0 8px 24px rgba(2,27,84,0.08)">`,
+      width: 800,
+      showCloseButton: true,
+      confirmButtonText: 'Cerrar'
+    });
+  });
+
+  document.querySelectorAll('li[data-key]').forEach(li => {
+    li.addEventListener('click', ev => {
+      const key = li.getAttribute('data-key');
+      showItemModal(key);
+    });
+  });
+});
+</script>
+
+</body>
+</html>
